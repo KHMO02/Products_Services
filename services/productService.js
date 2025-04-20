@@ -1,4 +1,5 @@
 const { Product, Account, ProductTransfer } = require('../models');
+const { Op } = require('sequelize');
 
 module.exports = {
   async getProductById(id) {
@@ -6,7 +7,40 @@ module.exports = {
   },
 
   async getSellingProducts(userId) {
-    return await Product.findAll({ where: { creator_id: userId } });
+    const soldProductIds = await ProductTransfer.findAll({
+      attributes: ['product_id'],
+      raw: true,
+    });
+  
+    const soldIds = soldProductIds.map(p => p.product_id);
+  
+    return await Product.findAll({
+      where: {
+        creator_id: userId,
+        product_id: {
+          [Op.notIn]: soldIds,
+        },
+      },
+    });
+  },
+
+  async getSoldProducts(userId) {
+    const soldProductIds = await ProductTransfer.findAll({
+      where: { buyer_id: userId },
+      attributes: ['product_id'],
+      raw: true,
+    });
+  
+    const soldIds = soldProductIds.map(p => p.product_id);
+  
+    return await Product.findAll({
+      where: {
+        creator_id: userId,
+        product_id: {
+          [Op.in]: soldIds,
+        },
+      },
+    });
   },
 
   async createProduct(data) {

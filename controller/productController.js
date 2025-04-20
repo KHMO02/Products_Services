@@ -12,6 +12,11 @@ module.exports = {
     res.json(products);
   },
 
+  async getSoldProducts(req, res) {
+      const soldProducts = await productService.getSoldProducts(req.user.id);
+      res.json(soldProducts);
+  },
+
   async createProduct(req, res) {
     const newProduct = await productService.createProduct({ ...req.body, creator_id: req.user.id });
     res.status(201).json(newProduct);
