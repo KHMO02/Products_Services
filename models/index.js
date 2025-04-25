@@ -8,7 +8,7 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.Account = require('./Account')(sequelize, DataTypes);
+db.Account = require('./Accounts')(sequelize, DataTypes);
 db.Product = require('./Product')(sequelize, DataTypes);
 db.ProductTransfer = require('./ProductTransfer')(sequelize, DataTypes);
 
