@@ -1,11 +1,10 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config/config');
 
-const sequelize = new Sequelize(config.database, config.username, config.password, config);
+const sequelize = new Sequelize(config);
 
 const db = {};
 
-db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.Account = require('./Accounts')(sequelize, DataTypes);
