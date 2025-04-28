@@ -1,5 +1,15 @@
 const productService = require('../services/productService');
 
+function mapApiToDbProduct(data) {
+  return {
+    name: data.name,
+    description: data.description,
+    price: data.price,
+    picture_url: data.picture_url,
+    on_sale: true, // or default true/false — depends on your app logic
+  };
+}
+
 module.exports = {
   async getProductById(req, res) {
     const product = await productService.getProductById(req.params.id);
@@ -18,13 +28,13 @@ module.exports = {
   },
 
   async createProduct(req, res) {
-    const newProduct = await productService.createProduct({ ...req.body, creator_id: req.user.id });
+    const newProduct = await productService.createProduct(req.user.id, mapApiToDbProduct(req.body));
     res.status(201).json(newProduct);
   },
 
   async updateProduct(req, res) {
     try {
-      const updated = await productService.updateProduct(req.params.id, req.user.id, req.body);
+      const updated = await productService.updateProduct(req.params.id, req.user.id, mapApiToDbProduct(req.body));
       res.json(updated);
     } catch (err) {
       res.status(403).json({ error: err.message });

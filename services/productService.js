@@ -43,8 +43,8 @@ module.exports = {
     });
   },
 
-  async createProduct(data) {
-    return await Product.create(data);
+  async createProduct(userId, data) {
+    return await Product.create({...data, creator_id: userId});
   },
 
   async updateProduct(id, userId, data) {
