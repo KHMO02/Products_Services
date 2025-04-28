@@ -57,6 +57,7 @@ beforeEach(async () => {
     await sequelize.query(`
       CREATE TABLE PRODUCT (
         product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        picture_url VARCHAR(255) NOT NULL,
         name VARCHAR(100) NOT NULL,
         description TEXT NOT NULL,
         price DECIMAL(10,2) NOT NULL,
@@ -67,13 +68,13 @@ beforeEach(async () => {
     `);
 
     await sequelize.query(`
-      INSERT INTO PRODUCT (product_id, name, description, price, on_sale, creator_id)
-      VALUES (992, 'Product 1', 'Some description 1', 10.00, true, 101);
+      INSERT INTO PRODUCT (product_id, name, description, price, on_sale, creator_id, picture_url)
+      VALUES (992, 'Product 1', 'Some description 1', 10.00, true, 101, 'https://picsum.photos/200/300');
     `);
 
     await sequelize.query(`
-      INSERT INTO PRODUCT (product_id, name, description, price, on_sale, creator_id)
-      VALUES (112, 'Product 2', 'Some description 2', 55.99, false, 101);
+      INSERT INTO PRODUCT (product_id, name, description, price, on_sale, creator_id, picture_url)
+      VALUES (112, 'Product 2', 'Some description 2', 55.99, false, 101, 'https://picsum.photos/200/300');
     `);
 
     await sequelize.query(`
@@ -132,7 +133,7 @@ describe('API Fetch List Tests', () => {
             .get('/products/992')
             .expect(200);
 
-        expect(res.body).toEqual({"description": "Some description 1", "name": "Product 1", "price": 10, "id": 992});
+        expect(res.body).toEqual({"description": "Some description 1", "picture_url": "https://picsum.photos/200/300", "name": "Product 1", "price": 10, "id": 992});
     });
 
     it('getting selling products, should show user owned (200)', async () => {
