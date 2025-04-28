@@ -114,4 +114,83 @@ describe('API Mutation Tests', () => {
         expect(results[0].price).toBe(20.00);
         expect(results[0].creator_id).toBe(101);
     });
+
+    it('when update product not belong to you expect not work (403)', async () => {
+        nock('http://fake-auth-service:8080')
+            .post('/auth/verify-token', {token: 'fake-token'})
+            .reply(200, { valid: true, user: 999 });
+
+        const res = await request(app)
+            .put('/products/112', {})
+            .send({
+                name: 'Updated Name',
+            })
+            .set('Authorization', 'Bearer fake-token')
+            .expect(403);
+
+        // TODO: check database for sure it doesn't update
+    });
+
+    it('when product not belong to you expect not to delete (403)', async () => {
+        nock('http://fake-auth-service:8080')
+            .post('/auth/verify-token', {token: 'fake-token'})
+            .reply(200, { valid: true, user: 999 });
+
+        const res = await request(app)
+            .delete('/products/112', {})
+            .set('Authorization', 'Bearer fake-token')
+            .expect(403);
+
+        // TODO: check database for sure it doesn't delete
+    });
+
+    it('when update product expect to work (200)', async () => {
+        nock('http://fake-auth-service:8080')
+            .post('/auth/verify-token', {token: 'fake-token'})
+            .reply(200, { valid: true, user: 101 });
+
+        const res = await request(app)
+            .put('/products/992', {})
+            .send({
+                name: 'Updated Product name',
+                picture_url: 'https://picsum.photos/100/800',
+            })
+            .set('Authorization', 'Bearer fake-token')
+            .expect(200);
+
+        // Check database
+        const [results] = await sequelize.query(`
+            SELECT * FROM PRODUCT WHERE product_id = 992
+        `);
+
+        expect(results.length).toBe(1);
+        expect(results[0].name).toBe('Updated Product name');
+        expect(results[0].description).toBe('Some description 1');
+        expect(results[0].picture_url).toBe('https://picsum.photos/100/800');
+        expect(results[0].price).toBe(10.00);
+    });
+
+    it('when product belong to you expect to delete (204)', async () => {
+        nock('http://fake-auth-service:8080')
+            .post('/auth/verify-token', {token: 'fake-token'})
+            .reply(200, { valid: true, user: 101 });
+
+        // make sure product already exists before (sanity check)
+        const [r1] = await sequelize.query(`
+            SELECT * FROM PRODUCT WHERE product_id = 112
+        `);
+        expect(r1.length).toBe(1);
+
+        const res = await request(app)
+            .delete('/products/112', {})
+            .set('Authorization', 'Bearer fake-token')
+            .expect(204);
+
+        // check deleted from database
+        const [r2] = await sequelize.query(`
+            SELECT * FROM PRODUCT WHERE product_id = 112
+        `);
+
+        expect(r2.length).toBe(0);
+    });
 });
