@@ -6,6 +6,18 @@ module.exports = {
     return await Product.findByPk(id);
   },
 
+  async searchProducts(keyword) {
+    return await Product.findAll({
+      where: {
+        [Op.or]: [
+          { name: { [Op.iLike]: `%${keyword}%` } },
+          { description: { [Op.iLike]: `%${keyword}%` } },
+        ],
+      },
+    });
+  },
+  
+
   async getSellingProducts(userId) {
     const soldProductIds = await ProductTransfer.findAll({
       attributes: ['product_id'],
@@ -65,4 +77,30 @@ module.exports = {
       include: Product,
     });
   },
+
+  async buyProduct(userId, productId) {
+    const product = await Product.findByPk(productId);
+    if (!product) throw new Error('Product not found');
+  
+    const alreadySold = await ProductTransfer.findOne({ where: { product_id: productId } });
+    if (alreadySold) throw new Error('Product already purchased');
+  
+    const buyerAccount = await Account.findByPk(userId);
+    if (!buyerAccount || buyerAccount.balance < product.price) {
+      throw new Error('Insufficient balance');
+    }
+  
+    await ProductTransfer.create({
+      product_id: productId,
+      buyer_id: userId,
+      transfer_date: new Date()
+    });
+    
+
+    //Wallet Transfer Section (Handled Later)
+    // buyerAccount.balance -= product.price;
+    // await buyerAccount.save();
+    // return { session_id: `mock-session-${Date.now()}` };
+  },
+  
 };

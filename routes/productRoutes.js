@@ -39,12 +39,16 @@ const validateIntegerId = (req, res, next) => {
   next();
 };
 
+
 router.get('/products/selling', authenticate, productController.getSellingProducts);
+router.get('/products', productController.searchProducts);
 router.get('/products/sold', authenticate, productController.getSoldProducts);
 router.post('/products/selling', authenticate, productController.createProduct);
 router.put('/products/:id', validateIntegerId, authenticate, productController.updateProduct);
 router.delete('/products/:id', validateIntegerId, authenticate, productController.deleteProduct);
 router.get('/products/purchased', authenticate, productController.getPurchasedProducts);
 router.get('/products/:id', validateIntegerId, productController.getProductById);
+router.post('/products/buy/:id', validateIntegerId, authenticate, productController.buyProduct);
+
 
 module.exports = router;

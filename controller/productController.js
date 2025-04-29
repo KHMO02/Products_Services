@@ -17,6 +17,12 @@ module.exports = {
     res.json(product);
   },
 
+  async searchProducts(req, res) {
+    const keyword = req.query.q || '';
+    const products = await productService.searchProducts(keyword);
+    res.json(products);
+  },  
+  
   async getSellingProducts(req, res) {
     const products = await productService.getSellingProducts(req.user.id);
     res.json(products);
@@ -54,4 +60,22 @@ module.exports = {
     const transfers = await productService.getPurchasedProducts(req.user.id);
     res.json(transfers);
   },
+
+  async buyProduct(req, res) {
+    try {
+      const result = await productService.buyProduct(req.user.id, parseInt(req.params.id));
+      res.status(200).json({ message: 'Product transferred', ...result });
+    } catch (err) {
+      if (err.message === 'Product already purchased') {
+        return res.status(409).json({ error: err.message });
+      } else if (err.message === 'Insufficient balance') {
+        return res.status(406).json({ error: err.message });
+      } else if (err.message === 'Product not found') {
+        return res.status(404).json({ error: err.message });
+      } else {
+        return res.status(500).json({ error: 'Something went wrong' });
+      }
+    }
+  },
+  
 };
