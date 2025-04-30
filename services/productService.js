@@ -93,7 +93,7 @@ module.exports = {
     await ProductTransfer.create({
       product_id: productId,
       buyer_id: userId,
-      transfer_date: new Date()
+      date_time: new Date()
     });
     
 
