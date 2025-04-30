@@ -46,6 +46,11 @@ beforeEach(async () => {
     `);
 
     await sequelize.query(`
+        INSERT INTO ACCOUNT (name, email, balance, account_id, password_hash)
+        VALUES ('User 2', 'user2@example.com', 250.1, 102, '$bcrypt$2b$10$examplehash');
+    `);
+
+    await sequelize.query(`
       DROP TABLE IF EXISTS PRODUCT;
     `);
 
@@ -70,6 +75,21 @@ beforeEach(async () => {
     await sequelize.query(`
       INSERT INTO PRODUCT (product_id, name, description, price, on_sale, creator_id, picture_url)
       VALUES (112, 'Product 2', 'Some description 2', 55.99, false, 101, 'https://picsum.photos/200/300');
+    `);
+
+    await sequelize.query(`
+        DROP TABLE IF EXISTS PRODUCT_TRANSFER;
+    `);
+
+    await sequelize.query(`
+      CREATE TABLE PRODUCT_TRANSFER (
+        date_time TIMESTAMP NOT NULL,
+        buyer_id INT NOT NULL,
+        product_id INT NOT NULL,
+        PRIMARY KEY (buyer_id, product_id),
+        FOREIGN KEY (buyer_id) REFERENCES ACCOUNT(account_id),
+        FOREIGN KEY (product_id) REFERENCES PRODUCT(product_id)
+      );
     `);
 });
 
@@ -192,5 +212,24 @@ describe('API Mutation Tests', () => {
         `);
 
         expect(r2.length).toBe(0);
+    });
+
+    it('buy product expect to buy (200)', async () => {
+        nock('http://fake-auth-service:8080')
+            .post('/auth/verify-token', {token: 'fake-token'})
+            .reply(200, { valid: true, user: 102 });
+
+        const res = await request(app)
+            .post('/products/buy/112', {})
+            .set('Authorization', 'Bearer fake-token')
+            .expect(200);
+
+        // check deleted from database
+        const [r2] = await sequelize.query(`
+            SELECT * FROM PRODUCT_TRANSFER WHERE product_id = 112
+        `);
+
+        expect(r2.length).toBe(1);
+        expect(r2[0].buyer_id).toBe(102);
     });
 });
