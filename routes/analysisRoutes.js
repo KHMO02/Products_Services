@@ -1,10 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const authController = require("./productRoutes");
+const { authenticate } = require("./productRoutes");
 const analysisController = require("../controller/analysisController");
 
-router.use(authController.authenticate);
-
-router.get("/analysis", analysisController.getAnalysis);
+router.get("/products/analytics", authenticate, analysisController.getAnalysis);
 
 module.exports = router;

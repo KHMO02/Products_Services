@@ -3,7 +3,7 @@ const router = express.Router();
 const productController = require("../controller/productController");
 const axios = require("axios");
 
-exports.authenticate = async function (req, res, next) {
+const authenticate = async function (req, res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -83,4 +83,7 @@ router.post(
   productController.buyProduct
 );
 
-module.exports = router;
+module.exports = {
+  router,
+  authenticate, // Export the authenticate function if needed elsewhere
+};

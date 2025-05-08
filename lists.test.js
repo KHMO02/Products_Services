@@ -189,14 +189,16 @@ describe("API Fetch List Tests", () => {
       .reply(200, { valid: true, user: 101 });
 
     const res = await request(app)
-      .get("/analysis")
+      .get("/products/analytics")
       .set("Authorization", "Bearer fake-token")
       .expect(200);
-
+    // console.log("res.body", res.body.soldProducts);
+    // console.log("res.body", res.body.sellingProducts);
+    // console.log("res.body", res.body);
     expect(res.body).toEqual({
-      totalProducts: 2,
-      soldProducts: 1,
-      sellingProducts: 1,
+      total_products: 2,
+      total_purchased_products: 0,
+      total_selling_products: 1,
     });
   });
 });

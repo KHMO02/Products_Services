@@ -116,4 +116,39 @@ module.exports = {
       throw error;
     }
   },
+  async getSoldProductsCount(userId) {
+    const soldProductIds = await ProductTransfer.findAll({
+      where: { buyer_id: userId },
+      attributes: ["product_id"],
+      raw: true,
+    });
+
+    const soldIds = soldProductIds.map((p) => p.product_id);
+
+    return await Product.count({
+      where: {
+        creator_id: userId,
+        product_id: {
+          [Op.in]: soldIds,
+        },
+      },
+    });
+  },
+  async getSellingProductsCount(userId) {
+    const soldProductIds = await ProductTransfer.findAll({
+      attributes: ["product_id"],
+      raw: true,
+    });
+
+    const soldIds = soldProductIds.map((p) => p.product_id);
+
+    return await Product.count({
+      where: {
+        creator_id: userId,
+        product_id: {
+          [Op.notIn]: soldIds,
+        },
+      },
+    });
+  },
 };
