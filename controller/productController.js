@@ -76,6 +76,7 @@ module.exports = {
       );
       res.status(200).json({ message: "Product transferred", ...result });
     } catch (err) {
+      console.error(err)
       if (err.message === "Product already purchased") {
         return res.status(409).json({ error: err.message });
       } else if (err.message === "Insufficient balance") {

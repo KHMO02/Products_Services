@@ -7,8 +7,20 @@ module.exports = {
   },
 
   async searchProducts(keyword) {
+    console.info(`Searching for ${keyword}`);
+
+    const soldProductIds = await ProductTransfer.findAll({
+      attributes: ["product_id"],
+      raw: true,
+    });
+
+    const soldIds = soldProductIds.map((p) => p.product_id);
+
     return await Product.findAll({
       where: {
+        product_id: {
+          [Op.notIn]: soldIds,
+        },
         [Op.or]: [
           { name: { [Op.iLike]: `%${keyword}%` } },
           { description: { [Op.iLike]: `%${keyword}%` } },
@@ -18,6 +30,7 @@ module.exports = {
   },
 
   async getSellingProducts(userId) {
+    console.info("getSellingProducts with userId", userId);
     const soldProductIds = await ProductTransfer.findAll({
       attributes: ["product_id"],
       raw: true,
@@ -36,6 +49,7 @@ module.exports = {
   },
 
   async getSoldProducts(userId) {
+    console.info("getSoldProducts with userId", userId);
     const soldProductIds = await ProductTransfer.findAll({
       where: { buyer_id: userId },
       attributes: ["product_id"],
@@ -55,22 +69,26 @@ module.exports = {
   },
 
   async createProduct(userId, data) {
+    console.info("createProduct with userId", userId, "and data", data);
     return await Product.create({ ...data, creator_id: userId });
   },
 
   async updateProduct(id, userId, data) {
+    console.info("updateProduct with id", id, "userId", userId, "and data", data);
     const product = await Product.findByPk(id);
     if (product.creator_id !== userId) throw new Error("Unauthorized");
     return await product.update(data);
   },
 
   async deleteProduct(id, userId) {
+    console.info("deleteProduct with id", id, "and userId", userId);
     const product = await Product.findByPk(id);
     if (product.creator_id !== userId) throw new Error("Unauthorized");
     return await product.destroy();
   },
 
   async getPurchasedProducts(userId) {
+    console.info("getPurchasedProducts with userId", userId);
     return await ProductTransfer.findAll({
       where: { buyer_id: userId },
       include: Product,
@@ -78,6 +96,7 @@ module.exports = {
   },
 
   async buyProduct(userId, productId) {
+    console.info("buyProduct with userId", userId, "and productId", productId);
     const product = await Product.findByPk(productId);
     if (!product) throw new Error("Product not found");
 
@@ -87,7 +106,20 @@ module.exports = {
     if (alreadySold) throw new Error("Product already purchased");
 
     const buyerAccount = await Account.findByPk(userId);
-    if (!buyerAccount || buyerAccount.balance < product.price) {
+
+    if (parseInt(buyerAccount.account_id) === parseInt(product.creator_id)) {
+      throw new Error("You are the creator of this product!")
+    }
+
+    console.info(buyerAccount)
+    if (!buyerAccount || parseInt(buyerAccount.balance) < parseInt(product.price)) {
+        console.info(!buyerAccount)
+        console.info(buyerAccount.balance < product.price)
+
+        console.info("Insufficient balance");
+        console.info(buyerAccount.balance)
+        console.info(product.price)
+
       throw new Error("Insufficient balance");
     }
 
@@ -104,6 +136,7 @@ module.exports = {
   },
 
   async countUserProducts(userID) {
+    console.info("countUserProducts with userID", userID);
     try {
       const productCount = await Product.count({
         where: {
@@ -117,6 +150,7 @@ module.exports = {
     }
   },
   async getSoldProductsCount(userId) {
+    console.info("getSoldProductsCount with userId", userId);
     const soldProductIds = await ProductTransfer.findAll({
       where: { buyer_id: userId },
       attributes: ["product_id"],
@@ -135,6 +169,7 @@ module.exports = {
     });
   },
   async getSellingProductsCount(userId) {
+    console.info("getSellingProductsCount with userId", userId);
     const soldProductIds = await ProductTransfer.findAll({
       attributes: ["product_id"],
       raw: true,
