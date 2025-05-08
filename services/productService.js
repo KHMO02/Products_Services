@@ -1,5 +1,6 @@
 const { Product, Account, ProductTransfer } = require("../models");
 const { Op } = require("sequelize");
+const axios = require("axios");
 
 module.exports = {
   async getProductById(id) {
@@ -129,10 +130,21 @@ module.exports = {
       date_time: new Date(),
     });
 
-    //Wallet Transfer Section (Handled Later)
-    // buyerAccount.balance -= product.price;
-    // await buyerAccount.save();
-    // return { session_id: `mock-session-${Date.now()}` };
+    //Wallet Transfer Section
+    // noinspection HttpUrlsUsage
+    const response = await axios.post(
+        `http://${process.env.E_WALLET_HOST}:${process.env.E_WALLET_PORT}/e-wallet/transfer`,
+        {
+          amount: parseInt(product.price),
+          debit: parseInt(product.creator_id),
+          credit: parseInt(userId)
+        }
+    );
+
+    if (response.status !== 200) {
+        console.error("Error transferring money:", response.data);
+        throw new Error("Error transferring money");
+    }
   },
 
   // TODO: deprecated
