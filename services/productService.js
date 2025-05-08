@@ -135,6 +135,7 @@ module.exports = {
     // return { session_id: `mock-session-${Date.now()}` };
   },
 
+  // TODO: deprecated
   async countUserProducts(userID) {
     console.info("countUserProducts with userID", userID);
     try {
@@ -149,10 +150,18 @@ module.exports = {
       throw error;
     }
   },
+
+
+  // Purchased products
+  async getPurchasedProductsCount(userId) {
+    return await ProductTransfer.count({
+      where: { buyer_id: userId },
+    });
+  },
+
   async getSoldProductsCount(userId) {
     console.info("getSoldProductsCount with userId", userId);
     const soldProductIds = await ProductTransfer.findAll({
-      where: { buyer_id: userId },
       attributes: ["product_id"],
       raw: true,
     });

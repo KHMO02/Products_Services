@@ -196,6 +196,7 @@ describe("API Fetch List Tests", () => {
     // console.log("res.body", res.body.sellingProducts);
     // console.log("res.body", res.body);
     expect(res.body).toEqual({
+      total_sold_products: 1,
       total_products: 2,
       total_purchased_products: 0,
       total_selling_products: 1,
