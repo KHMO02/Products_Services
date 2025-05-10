@@ -77,14 +77,14 @@ module.exports = {
   async updateProduct(id, userId, data) {
     console.info("updateProduct with id", id, "userId", userId, "and data", data);
     const product = await Product.findByPk(id);
-    if (product.creator_id !== userId) throw new Error("Unauthorized");
+    if (parseInt(product.creator_id) !== parseInt(userId)) throw new Error("Unauthorized");
     return await product.update(data);
   },
 
   async deleteProduct(id, userId) {
     console.info("deleteProduct with id", id, "and userId", userId);
     const product = await Product.findByPk(id);
-    if (product.creator_id !== userId) throw new Error("Unauthorized");
+    if (parseInt(product.creator_id) !== parseInt(userId)) throw new Error("Unauthorized");
     return await product.destroy();
   },
 
