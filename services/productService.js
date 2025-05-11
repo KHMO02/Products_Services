@@ -52,7 +52,6 @@ module.exports = {
   async getSoldProducts(userId) {
     console.info("getSoldProducts with userId", userId);
     const soldProductIds = await ProductTransfer.findAll({
-      where: { buyer_id: userId },
       attributes: ["product_id"],
       raw: true,
     });
